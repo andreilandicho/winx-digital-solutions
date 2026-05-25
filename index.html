@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="winxApp">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Winx Digital Solutions</title>
+
+  <!-- Bootstrap 5 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body ng-controller="MainController">
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg fixed-top" id="mainNav">
+    <div class="container">
+      <a class="navbar-brand" href="#home">
+        <span class="brand-w">W</span>inx Digital Solutions
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+          <li class="nav-item"><a class="nav-link" href="#team">Team</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+          <li class="nav-item ms-lg-3">
+            <a class="btn btn-primary-winx" href="#contact">Book a Consultation</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== HOME SECTION ===== -->
+  <section id="home" class="hero-section">
+    <div class="container">
+      <div class="row align-items-center min-vh-100">
+        <!-- Left: Placeholder / Illustration -->
+        <div class="col-lg-6 hero-visual d-flex align-items-center justify-content-center">
+          <div class="hero-mockup">
+            <div class="mockup-browser">
+              <div class="mockup-bar">
+                <span></span><span></span><span></span>
+                <div class="mockup-url">winxdigital.ph</div>
+              </div>
+              <div class="mockup-screen">
+                <div class="mockup-line w-60"></div>
+                <div class="mockup-line w-40"></div>
+                <div class="mockup-grid">
+                  <div class="mockup-card"></div>
+                  <div class="mockup-card"></div>
+                  <div class="mockup-card"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Right: Text -->
+        <div class="col-lg-6 hero-text">
+          <p class="hero-eyebrow">Web Development &amp; Digital Solutions</p>
+          <h1 class="hero-heading">Building Digital Futures,<br><span class="accent">One Website</span> at a Time.</h1>
+          <p class="hero-sub">We empower SMEs, schools, and organizations across the Philippines with affordable, professional, and tailor-made digital solutions.</p>
+          <div class="hero-ctas">
+            <a href="#contact" class="btn btn-primary-winx btn-lg">Book a Free Consultation</a>
+            <a href="#services" class="btn btn-outline-winx btn-lg">View Services</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SERVICES SECTION ===== -->
+  <section id="services" class="section-pad">
+    <div class="container">
+      <div class="section-header text-center mb-5">
+        <p class="section-eyebrow">What We Offer</p>
+        <h2 class="section-title">Our Service Packages</h2>
+        <p class="section-sub">Transparent pricing. No hidden fees. Packages built for every budget.</p>
+      </div>
+      <div class="row g-4 justify-content-center">
+        <div class="col-md-6 col-xl-3" ng-repeat="pkg in packages">
+          <div class="service-card" ng-class="{'featured': pkg.featured}">
+            <div class="card-badge" ng-if="pkg.featured">Most Popular</div>
+            <div class="card-icon"><i class="bi" ng-class="pkg.icon"></i></div>
+            <h3 class="card-title">{{pkg.name}}</h3>
+            <p class="card-price">{{pkg.price}}</p>
+            <p class="card-desc">{{pkg.desc}}</p>
+            <ul class="card-features">
+              <li ng-repeat="f in pkg.features"><i class="bi bi-check2"></i> {{f}}</li>
+            </ul>
+            <a href="#contact" class="btn btn-book">Get Started</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TEAM SECTION ===== -->
+  <section id="team" class="section-pad team-section">
+    <div class="container">
+      <div class="section-header text-center mb-5">
+        <p class="section-eyebrow">The People Behind Winx</p>
+        <h2 class="section-title">Meet Our Team</h2>
+        <p class="section-sub">BSIT graduates from PUP CCIS — developers, designers, and strategists working as one.</p>
+      </div>
+      <div class="row g-4 justify-content-center">
+        <div class="col-sm-6 col-lg-3" ng-repeat="member in team">
+          <div class="team-card">
+            <div class="team-avatar">
+              <img ng-src="{{member.photo}}" alt="{{member.name}}" onerror="this.src='assets/images/team/placeholder.png'"/>
+            </div>
+            <h4 class="team-name">{{member.name}}</h4>
+            <p class="team-role">{{member.role}}</p>
+            <p class="team-bio">{{member.bio}}</p>
+            <div class="team-socials">
+              <a ng-href="{{member.facebook}}" target="_blank" title="Facebook"><i class="bi bi-facebook"></i></a>
+              <a ng-href="{{member.github}}" target="_blank" title="GitHub"><i class="bi bi-github"></i></a>
+              <a ng-href="{{member.linkedin}}" target="_blank" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+              <a ng-href="{{member.cv}}" target="_blank" title="View CV"><i class="bi bi-file-earmark-person"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CONTACT SECTION ===== -->
+  <section id="contact" class="section-pad contact-section">
+    <div class="container">
+      <div class="row g-5">
+        <!-- Left: Info -->
+        <div class="col-lg-5">
+          <p class="section-eyebrow">Get In Touch</p>
+          <h2 class="section-title">Let's Build Something Together</h2>
+          <p class="contact-desc">Fill out the consultation form and we'll get back to you within 24 hours with a tailored proposal.</p>
+          <div class="contact-links">
+            <a href="mailto:hello@winxdigitalsolutions.com"><i class="bi bi-envelope-fill"></i> hello@winxdigitalsolutions.com</a>
+            <a href="https://facebook.com/winxdigital" target="_blank"><i class="bi bi-facebook"></i> facebook.com/winxdigital</a>
+            <a href="https://linkedin.com/company/winxdigital" target="_blank"><i class="bi bi-linkedin"></i> linkedin.com/company/winxdigital</a>
+            <a href="https://instagram.com/winxdigital" target="_blank"><i class="bi bi-instagram"></i> instagram.com/winxdigital</a>
+          </div>
+        </div>
+        <!-- Right: Form -->
+        <div class="col-lg-7">
+          <div class="contact-form-card" ng-show="!formSent">
+            <h3 class="form-title">Book a Free Consultation</h3>
+            <form name="consultForm" ng-submit="sendEmail()" novalidate>
+              <div class="row g-3">
+                <div class="col-sm-6">
+                  <label>Business / Organization Name *</label>
+                  <input type="text" class="form-control" ng-model="form.businessName" required placeholder="e.g. Santos Bakery"/>
+                </div>
+                <div class="col-sm-6">
+                  <label>Location *</label>
+                  <input type="text" class="form-control" ng-model="form.location" required placeholder="e.g. Makati City, Metro Manila"/>
+                </div>
+                <div class="col-sm-6">
+                  <label>Contact Person *</label>
+                  <input type="text" class="form-control" ng-model="form.contactPerson" required placeholder="Your full name"/>
+                </div>
+                <div class="col-sm-6">
+                  <label>Email Address *</label>
+                  <input type="email" class="form-control" ng-model="form.email" required placeholder="you@example.com"/>
+                </div>
+                <div class="col-12">
+                  <label>Monthly Revenue Range</label>
+                  <select class="form-select" ng-model="form.revenue">
+                    <option value="">Select a range</option>
+                    <option>Below ₱50,000</option>
+                    <option>₱50,000 – ₱150,000</option>
+                    <option>₱150,000 – ₱500,000</option>
+                    <option>₱500,000 – ₱1,000,000</option>
+                    <option>Above ₱1,000,000</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label>Package Interest</label>
+                  <select class="form-select" ng-model="form.package">
+                    <option value="">Not sure yet</option>
+                    <option>Starter Package (₱5,000 – ₱12,000)</option>
+                    <option>Professional Package (₱15,000 – ₱35,000)</option>
+                    <option>Enterprise Package (₱40,000 – ₱100,000+)</option>
+                    <option>Maintenance Package (₱1,500 – ₱5,000/mo)</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label>Tell Us About Your Business *</label>
+                  <textarea class="form-control" rows="4" ng-model="form.background" required placeholder="What does your business do? What problem are you trying to solve with a website? Any existing online presence?"></textarea>
+                </div>
+                <div class="col-12">
+                  <label>Anything else we should know?</label>
+                  <textarea class="form-control" rows="3" ng-model="form.notes" placeholder="Timeline, budget constraints, specific features, etc."></textarea>
+                </div>
+                <div class="col-12">
+                  <button type="submit" class="btn btn-primary-winx w-100 btn-lg" ng-disabled="sending">
+                    <span ng-show="!sending"><i class="bi bi-send me-2"></i>Send Consultation Request</span>
+                    <span ng-show="sending"><i class="bi bi-hourglass-split me-2"></i>Sending...</span>
+                  </button>
+                  <p class="form-note mt-2"><i class="bi bi-shield-check me-1"></i>We respond within 24 hours. No spam, ever.</p>
+                </div>
+              </div>
+            </form>
+          </div>
+          <!-- Success state -->
+          <div class="contact-form-card success-card text-center" ng-show="formSent">
+            <i class="bi bi-check-circle-fill success-icon"></i>
+            <h3>Request Sent!</h3>
+            <p>Thank you, <strong>{{form.businessName}}</strong>. We'll review your details and get back to you at <strong>{{form.email}}</strong> within 24 hours.</p>
+            <button class="btn btn-outline-winx mt-3" ng-click="resetForm()">Send Another Request</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container text-center">
+      <p class="footer-brand"><span class="brand-w">W</span>inx Digital Solutions</p>
+      <p class="footer-tagline">Building Digital Futures, One Website at a Time.</p>
+      <p class="footer-copy">© 2026 Winx Digital Solutions. All rights reserved. | PUP CCIS Group 5 BSIT 4-3</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
