@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="winxDashApp">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Winx Digital Solutions</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/admin.css"/>
+</head>
+<body ng-controller="DashboardController" class="dash-body">
+
+  <!-- AUTH GUARD OVERLAY -->
+  <div class="auth-loading" ng-show="checkingAuth">
+    <div class="auth-spinner">
+      <div class="spinner-ring"></div>
+      <p>Verifying session...</p>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" ng-class="{'sidebar-collapsed': sidebarCollapsed}">
+    <div class="sidebar-header">
+      <span class="sidebar-logo" ng-show="!sidebarCollapsed">
+        <span class="brand-w">W</span>inx Admin
+      </span>
+      <span class="sidebar-logo sidebar-logo-sm" ng-show="sidebarCollapsed">
+        <span class="brand-w">W</span>
+      </span>
+      <button class="sidebar-toggle" ng-click="sidebarCollapsed = !sidebarCollapsed">
+        <i class="bi" ng-class="sidebarCollapsed ? 'bi-layout-sidebar' : 'bi-layout-sidebar-reverse'"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-link" ng-class="{'active': activeTab === 'consultations'}" ng-click="setTab('consultations')">
+        <i class="bi bi-calendar2-check"></i>
+        <span ng-show="!sidebarCollapsed">Consultations</span>
+        <span class="sidebar-badge" ng-show="!sidebarCollapsed && newCount > 0">{{newCount}}</span>
+      </a>
+      <a class="sidebar-link" ng-class="{'active': activeTab === 'calendar'}" ng-click="setTab('calendar')">
+        <i class="bi bi-calendar3"></i>
+        <span ng-show="!sidebarCollapsed">Calendar</span>
+      </a>
+      <a class="sidebar-link" ng-class="{'active': activeTab === 'projects'}" ng-click="setTab('projects')">
+        <i class="bi bi-kanban"></i>
+        <span ng-show="!sidebarCollapsed">Projects</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="admin-user" ng-show="!sidebarCollapsed">
+        <div class="admin-avatar">{{adminInitial}}</div>
+        <div class="admin-info">
+          <span class="admin-name">{{adminEmail}}</span>
+          <span class="admin-badge">Administrator</span>
+        </div>
+      </div>
+      <button class="btn-logout" ng-click="logout()" title="Sign out">
+        <i class="bi bi-box-arrow-right"></i>
+        <span ng-show="!sidebarCollapsed">Sign Out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="dash-main" ng-class="{'dash-main-wide': sidebarCollapsed}">
+
+    <!-- TOP BAR -->
+    <header class="dash-topbar">
+      <div class="topbar-left">
+        <h2 class="page-title">
+          <span ng-show="activeTab === 'consultations'"><i class="bi bi-calendar2-check me-2"></i>Consultations</span>
+          <span ng-show="activeTab === 'calendar'"><i class="bi bi-calendar3 me-2"></i>Calendar</span>
+          <span ng-show="activeTab === 'projects'"><i class="bi bi-kanban me-2"></i>Projects</span>
+        </h2>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-date">{{today}}</span>
+      </div>
+    </header>
+
+    <!-- ============================================================ -->
+    <!-- TAB: CONSULTATIONS -->
+    <!-- ============================================================ -->
+    <section ng-show="activeTab === 'consultations'" class="dash-section">
+
+      <!-- Stats row -->
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div class="stat-icon stat-blue"><i class="bi bi-inbox-fill"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">{{consultations.length}}</span>
+              <span class="stat-label">Total Requests</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div class="stat-icon stat-amber"><i class="bi bi-hourglass-split"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">{{newCount}}</span>
+              <span class="stat-label">New / Unread</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div class="stat-icon stat-green"><i class="bi bi-check2-circle"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">{{scheduledCount}}</span>
+              <span class="stat-label">Scheduled</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div class="stat-icon stat-coral"><i class="bi bi-x-circle"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">{{closedCount}}</span>
+              <span class="stat-label">Closed</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter / Search bar -->
+      <div class="table-toolbar mb-3">
+        <div class="search-wrap">
+          <i class="bi bi-search search-icon"></i>
+          <input type="text" class="form-control search-input" ng-model="consultSearch" placeholder="Search by business, email, or location..."/>
+        </div>
+        <select class="form-select filter-select" ng-model="statusFilter">
+          <option value="">All Statuses</option>
+          <option value="new">New</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="closed">Closed</option>
+        </select>
+      </div>
+
+      <!-- Table -->
+      <div class="dash-card">
+        <div class="table-responsive">
+          <table class="table winx-table">
+            <thead>
+              <tr>
+                <th>Business</th>
+                <th>Contact</th>
+                <th>Location</th>
+                <th>Package</th>
+                <th>Revenue</th>
+                <th>Received</th>
+                <th>Status</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-show="loading">
+                <td colspan="8" class="text-center py-5">
+                  <div class="spinner-border text-primary" role="status"></div>
+                  <p class="mt-2 text-muted">Loading consultations...</p>
+                </td>
+              </tr>
+              <tr ng-show="!loading && filteredConsultations().length === 0">
+                <td colspan="8" class="text-center py-5 text-muted">
+                  <i class="bi bi-inbox fs-1 d-block mb-2 opacity-25"></i>
+                  No consultations found.
+                </td>
+              </tr>
+              <tr ng-repeat="c in filteredConsultations() | orderBy:'-createdAt'" class="table-row-hover">
+                <td>
+                  <div class="cell-primary">{{c.businessName}}</div>
+                  <div class="cell-secondary">{{c.background | limitTo:50}}{{c.background.length > 50 ? '...' : ''}}</div>
+                </td>
+                <td>
+                  <div class="cell-primary">{{c.contactPerson}}</div>
+                  <div class="cell-secondary">{{c.email}}</div>
+                </td>
+                <td>{{c.location}}</td>
+                <td>
+                  <span class="pkg-badge">{{c.package || 'TBD'}}</span>
+                </td>
+                <td>{{c.revenue || '—'}}</td>
+                <td>
+                  <div class="cell-primary">{{c.createdAt | date:'MMM d, y'}}</div>
+                  <div class="cell-secondary">{{c.createdAt | date:'h:mm a'}}</div>
+                </td>
+                <td>
+                  <span class="status-badge"
+                    ng-class="{
+                      'status-new': c.status === 'new',
+                      'status-scheduled': c.status === 'scheduled',
+                      'status-closed': c.status === 'closed'
+                    }">
+                    {{c.status || 'new'}}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-btns">
+                    <!-- View Details -->
+                    <button class="action-btn" title="View details" ng-click="viewConsultation(c)">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <!-- Add to Google Calendar -->
+                    <button class="action-btn action-btn-green" title="Add to Calendar" ng-click="addToCalendar(c)">
+                      <i class="bi bi-calendar-plus"></i>
+                    </button>
+                    <!-- Book Google Meet -->
+                    <button class="action-btn action-btn-blue" title="Create Google Meet" ng-click="bookMeet(c)">
+                      <i class="bi bi-camera-video"></i>
+                    </button>
+                    <!-- Update Status -->
+                    <div class="dropdown d-inline">
+                      <button class="action-btn action-btn-amber" title="Update status" data-bs-toggle="dropdown">
+                        <i class="bi bi-three-dots-vertical"></i>
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" ng-click="updateStatus(c, 'new')"><i class="bi bi-circle me-2 text-primary"></i>Mark as New</a></li>
+                        <li><a class="dropdown-item" ng-click="updateStatus(c, 'scheduled')"><i class="bi bi-check-circle me-2 text-success"></i>Mark as Scheduled</a></li>
+                        <li><a class="dropdown-item" ng-click="updateStatus(c, 'closed')"><i class="bi bi-x-circle me-2 text-danger"></i>Mark as Closed</a></li>
+                        <li><hr class="dropdown-divider"/></li>
+                        <li><a class="dropdown-item text-danger" ng-click="deleteConsultation(c)"><i class="bi bi-trash me-2"></i>Delete</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TAB: CALENDAR -->
+    <!-- ============================================================ -->
+    <section ng-show="activeTab === 'calendar'" class="dash-section">
+      <div class="dash-card p-0 overflow-hidden">
+        <div class="calendar-header">
+          <div>
+            <h3 class="mb-1">Google Calendar</h3>
+            <p class="text-muted mb-0" style="font-size:0.85rem;">Showing scheduled consultations and meetings</p>
+          </div>
+          <a href="https://calendar.google.com" target="_blank" class="btn btn-sm btn-outline-winx-sm">
+            <i class="bi bi-box-arrow-up-right me-1"></i>Open in Google Calendar
+          </a>
+        </div>
+        <div class="calendar-embed-wrap">
+          <!-- Replace the src with your actual Google Calendar embed URL -->
+          <!-- Go to calendar.google.com → Settings → [Your calendar] → Integrate calendar → Embed code -->
+          <iframe
+            src="https://calendar.google.com/calendar/embed?src=winxdigitalsolutions%40gmail.com&ctz=Asia%2FManila"
+            style="border:0"
+            width="100%"
+            height="650"
+            frameborder="0"
+            scrolling="no"
+            class="calendar-iframe"
+            title="Winx Digital Solutions Calendar">
+          </iframe>
+          <!-- Placeholder shown when calendar is not yet configured -->
+          <div class="calendar-placeholder">
+            <i class="bi bi-calendar3"></i>
+            <h4>Connect Your Google Calendar</h4>
+            <p>Replace the <code>src</code> in the iframe above with your Google Calendar embed URL.<br>See the setup guide below for instructions.</p>
+            <a href="https://support.google.com/calendar/answer/41207" target="_blank" class="btn btn-primary-winx mt-2">
+              <i class="bi bi-book me-2"></i>View Setup Guide
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- TAB: PROJECTS -->
+    <!-- ============================================================ -->
+    <section ng-show="activeTab === 'projects'" class="dash-section">
+
+      <div class="section-actions mb-4">
+        <button class="btn btn-primary-winx" ng-click="openProjectModal()">
+          <i class="bi bi-plus-lg me-2"></i>Add New Project
+        </button>
+      </div>
+
+      <!-- Project stats -->
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div class="stat-icon stat-blue"><i class="bi bi-folder2-open"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">{{projects.length}}</span>
+              <span class="stat-label">Total Projects</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div class="stat-icon stat-green"><i class="bi bi-check2-all"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">{{completedProjects()}}</span>
+              <span class="stat-label">Completed</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div class="stat-icon stat-amber"><i class="bi bi-activity"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">{{activeProjects()}}</span>
+              <span class="stat-label">In Progress</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div class="stat-icon stat-coral"><i class="bi bi-currency-dollar"></i></div>
+            <div class="stat-info">
+              <span class="stat-value">₱{{totalBudget() | number:0}}</span>
+              <span class="stat-label">Total Budget</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Projects table -->
+      <div class="dash-card">
+        <div class="table-responsive">
+          <table class="table winx-table">
+            <thead>
+              <tr>
+                <th>Project Name</th>
+                <th>Client</th>
+                <th>Phase</th>
+                <th>Budget</th>
+                <th style="min-width:200px;">Progress</th>
+                <th>Start Date</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-show="loadingProjects">
+                <td colspan="7" class="text-center py-5">
+                  <div class="spinner-border text-primary" role="status"></div>
+                </td>
+              </tr>
+              <tr ng-show="!loadingProjects && projects.length === 0">
+                <td colspan="7" class="text-center py-5 text-muted">
+                  <i class="bi bi-kanban fs-1 d-block mb-2 opacity-25"></i>
+                  No projects yet. Add your first project!
+                </td>
+              </tr>
+              <tr ng-repeat="p in projects | orderBy:'-createdAt'" class="table-row-hover">
+                <td>
+                  <div class="cell-primary">{{p.name}}</div>
+                  <div class="cell-secondary">{{p.description | limitTo:50}}{{p.description && p.description.length > 50 ? '...' : ''}}</div>
+                </td>
+                <td>{{p.client || '—'}}</td>
+                <td>
+                  <span class="phase-badge phase-{{p.phase | lowercase | replace:' ':'-'}}">
+                    {{p.phase}}
+                  </span>
+                </td>
+                <td>₱{{p.budget | number:0}}</td>
+                <td>
+                  <div class="progress-wrap">
+                    <div class="progress winx-progress">
+                      <div class="progress-bar"
+                        ng-class="progressColor(p.percentage)"
+                        role="progressbar"
+                        ng-style="{'width': p.percentage + '%'}"
+                        aria-valuenow="{{p.percentage}}"
+                        aria-valuemin="0"
+                        aria-valuemax="100">
+                      </div>
+                    </div>
+                    <span class="progress-pct">{{p.percentage}}%</span>
+                  </div>
+                </td>
+                <td>{{p.startDate | date:'MMM d, y'}}</td>
+                <td>
+                  <div class="action-btns">
+                    <button class="action-btn" title="Edit project" ng-click="editProject(p)">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="action-btn action-btn-coral" title="Delete project" ng-click="deleteProject(p)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================ -->
+  <!-- CONSULTATION DETAIL MODAL -->
+  <!-- ============================================================ -->
+  <div class="modal fade" id="consultModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content winx-modal" ng-if="selectedConsult">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-person-lines-fill me-2"></i>Consultation Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <div class="detail-field">
+                <span class="detail-label">Business Name</span>
+                <span class="detail-value">{{selectedConsult.businessName}}</span>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="detail-field">
+                <span class="detail-label">Location</span>
+                <span class="detail-value">{{selectedConsult.location}}</span>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="detail-field">
+                <span class="detail-label">Contact Person</span>
+                <span class="detail-value">{{selectedConsult.contactPerson}}</span>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="detail-field">
+                <span class="detail-label">Email</span>
+                <span class="detail-value"><a ng-href="mailto:{{selectedConsult.email}}">{{selectedConsult.email}}</a></span>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="detail-field">
+                <span class="detail-label">Package Interest</span>
+                <span class="detail-value">{{selectedConsult.package || 'Not specified'}}</span>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="detail-field">
+                <span class="detail-label">Monthly Revenue</span>
+                <span class="detail-value">{{selectedConsult.revenue || 'Not specified'}}</span>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="detail-field">
+                <span class="detail-label">Business Background</span>
+                <span class="detail-value">{{selectedConsult.background}}</span>
+              </div>
+            </div>
+            <div class="col-12" ng-if="selectedConsult.notes">
+              <div class="detail-field">
+                <span class="detail-label">Additional Notes</span>
+                <span class="detail-value">{{selectedConsult.notes}}</span>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="detail-field">
+                <span class="detail-label">Received</span>
+                <span class="detail-value">{{selectedConsult.createdAt | date:'MMMM d, y — h:mm a'}}</span>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="detail-field">
+                <span class="detail-label">Status</span>
+                <span class="status-badge"
+                  ng-class="{
+                    'status-new': selectedConsult.status === 'new',
+                    'status-scheduled': selectedConsult.status === 'scheduled',
+                    'status-closed': selectedConsult.status === 'closed'
+                  }">
+                  {{selectedConsult.status || 'new'}}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+          <button class="btn btn-success-winx" ng-click="addToCalendar(selectedConsult)">
+            <i class="bi bi-calendar-plus me-2"></i>Add to Calendar
+          </button>
+          <button class="btn btn-primary-winx" ng-click="bookMeet(selectedConsult)">
+            <i class="bi bi-camera-video me-2"></i>Create Meet
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- ADD / EDIT PROJECT MODAL -->
+  <!-- ============================================================ -->
+  <div class="modal fade" id="projectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content winx-modal">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-kanban me-2"></i>
+            {{editingProject ? 'Edit Project' : 'Add New Project'}}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form name="projectForm" novalidate>
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label-admin">Project Name *</label>
+                <input type="text" class="form-control admin-input" ng-model="projectForm.name" required placeholder="e.g. Santos Bakery Website"/>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label-admin">Client Name</label>
+                <input type="text" class="form-control admin-input" ng-model="projectForm.client" placeholder="e.g. Santos Bakery"/>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label-admin">Budget (₱) *</label>
+                <input type="number" class="form-control admin-input" ng-model="projectForm.budget" required placeholder="e.g. 25000"/>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label-admin">Project Phase *</label>
+                <select class="form-select admin-input" ng-model="projectForm.phase" required>
+                  <option value="">Select phase</option>
+                  <option>Discovery</option>
+                  <option>Design</option>
+                  <option>Development</option>
+                  <option>Testing</option>
+                  <option>Deployment</option>
+                  <option>Maintenance</option>
+                  <option>Completed</option>
+                </select>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label-admin">Start Date</label>
+                <input type="date" class="form-control admin-input" ng-model="projectForm.startDate"/>
+              </div>
+              <div class="col-12">
+                <label class="form-label-admin">Progress: <strong>{{projectForm.percentage || 0}}%</strong></label>
+                <input type="range" class="form-range winx-range" min="0" max="100" step="5" ng-model="projectForm.percentage"/>
+                <div class="progress winx-progress mt-1">
+                  <div class="progress-bar"
+                    ng-class="progressColor(projectForm.percentage)"
+                    ng-style="{'width': (projectForm.percentage || 0) + '%'}">
+                  </div>
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label-admin">Description</label>
+                <textarea class="form-control admin-input" rows="3" ng-model="projectForm.description" placeholder="Brief project description..."></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary-winx" ng-click="saveProject()" ng-disabled="savingProject">
+            <span ng-show="!savingProject"><i class="bi bi-check2 me-2"></i>{{editingProject ? 'Save Changes' : 'Add Project'}}</span>
+            <span ng-show="savingProject"><i class="bi bi-hourglass-split me-2"></i>Saving...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="../js/firebase-config.js"></script>
+  <script src="../js/admin-dashboard.js"></script>
+</body>
+</html>
